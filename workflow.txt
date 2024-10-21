@@ -1,0 +1,106 @@
+{
+  "definition": {
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "actions": {
+      "Analyze_Document_for_Prebuilt_or_Custom_models_(v3.x_API)": {
+        "type": "ApiConnection",
+        "inputs": {
+          "host": {
+            "connection": {
+              "referenceName": "formrecognizer"
+            }
+          },
+          "method": "post",
+          "body": "@triggerBody()",
+          "path": "/documentModels/@{encodeURIComponent('prebuilt-layout')}:analyze",
+          "queries": {
+            "api-version": "2023-07-31"
+          }
+        },
+        "runAfter": {}
+      },
+      "Get_chat_completions": {
+        "type": "ServiceProvider",
+        "inputs": {
+          "parameters": {
+            "deploymentId": "gpt-4o",
+            "messages": [
+              {
+                "role": "System",
+                "content": "Do an in-depth review of the package information containing drugs and dosages.  Keep report as brief as possible - only want to know about problems. Dont report when things are OK and consistent.  Look for spelling mistakes and inconsistencies.  Drug names must be spelt consistent.  Dosages should be consistent.   Multiple repeated instances of text are OK provided that the spelling is consistent.   "
+              },
+              {
+                "role": "User",
+                "content": "@body('Analyze_Document_for_Prebuilt_or_Custom_models_(v3.x_API)')?['analyzeResult']?['content']"
+              }
+            ],
+            "temperature": 0.1
+          },
+          "serviceProviderConfiguration": {
+            "connectionName": "openai",
+            "operationId": "getChatCompletions",
+            "serviceProviderId": "/serviceProviders/openai"
+          }
+        },
+        "runAfter": {
+          "Analyze_Document_for_Prebuilt_or_Custom_models_(v3.x_API)": [
+            "SUCCEEDED"
+          ]
+        }
+      },
+      "Send_an_email_(V2)": {
+        "type": "ApiConnection",
+        "inputs": {
+          "host": {
+            "connection": {
+              "referenceName": "office365"
+            }
+          },
+          "method": "post",
+          "body": {
+            "To": "mark@markharrison.org",
+            "Subject": "Packaging info for @{base64ToString(triggerOutputs()['headers']['x-ms-file-name-encoded'])} ",
+            "Body": "<pre> @{body('Get_chat_completions')?['content']}</pre>",
+            "Importance": "Normal"
+          },
+          "path": "/v2/Mail"
+        },
+        "runAfter": {
+          "Get_chat_completions": [
+            "SUCCEEDED"
+          ]
+        }
+      }
+    },
+    "contentVersion": "1.0.0.0",
+    "outputs": {},
+    "triggers": {
+      "When_a_file_is_created": {
+        "type": "ApiConnection",
+        "inputs": {
+          "host": {
+            "connection": {
+              "referenceName": "onedriveforbusiness"
+            }
+          },
+          "method": "get",
+          "path": "/datasets/default/triggers/onnewfilev2",
+          "queries": {
+            "folderId": "b!TlSaoPe26kG0xY251Be8oDegTsgfBpRNl1m-VrMdtiCuWLZgceX_Rokd9j89DSJc.01UCGE2S2PGSHRI4IOCNGLF3VSD3UVTQLI",
+            "includeSubfolders": false,
+            "inferContentType": true,
+            "simulate": false
+          }
+        },
+        "recurrence": {
+          "interval": 1,
+          "frequency": "Minute"
+        },
+        "metadata": {
+          "b!TlSaoPe26kG0xY251Be8oDegTsgfBpRNl1m-VrMdtiCuWLZgceX_Rokd9j89DSJc.01UCGE2S2PGSHRI4IOCNGLF3VSD3UVTQLI": "/junk"
+        }
+      }
+    }
+  },
+  "kind": "Stateful"
+}

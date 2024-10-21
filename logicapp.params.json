@@ -1,0 +1,51 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "subscriptionId": {
+        "value": "bf0ff2fe-5503-48b0-8b52-cd0e67aa8fd8"
+      },
+      "name": {
+        "value": "marklogapp"
+      },
+      "location": {
+        "value": "UK South"
+      },
+      "use32BitWorkerProcess": {
+        "value": null
+      },
+      "ftpsState": {
+        "value": "FtpsOnly"
+      },
+      "storageAccountName": {
+        "value": "marklogappstorage"
+      },
+      "netFrameworkVersion": {
+        "value": "v6.0"
+      },
+      "sku": {
+        "value": "WorkflowStandard"
+      },
+      "skuCode": {
+        "value": "WS1"
+      },
+      "workerSize": {
+        "value": "3"
+      },
+      "workerSizeId": {
+        "value": "3"
+      },
+      "numberOfWorkers": {
+        "value": "1"
+      },
+      "hostingPlanName": {
+        "value": "marklogappplan"
+      },
+      "serverFarmResourceGroup": {
+        "value": "logicapp-rg"
+      },
+      "alwaysOn": {
+        "value": null
+      }
+    }
+  }
